@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Table, Button, Popconfirm, message, notification,Pagination} from 'antd';
+import { Table, Button, Popconfirm, message, notification} from 'antd';
 import type { TableProps , PopconfirmProps} from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import CreateUserModal from "./create.user.modal";

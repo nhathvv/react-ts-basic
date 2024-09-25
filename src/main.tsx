@@ -41,22 +41,22 @@ const Header: React.FC = () => {
 };
 const Layout = () => {
   const getData = async () => {
-    const res =  await fetch("http://localhost:8000/api/v1/auth/login", {
+    const res = await fetch("http://localhost:8000/api/v1/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username: "nhathv.21it@gmail.com",
+        username: "admin@local.dev",
         password: "123456",
       })
     })
     const d = await res.json();
-    localStorage.setItem("access_token",d.data.access_token)
+    localStorage.setItem("access_token", d.data.access_token)
   }
   useEffect(() => {
     getData()
-  },[])
+  }, [])
   return (
     <div>
       <Header />

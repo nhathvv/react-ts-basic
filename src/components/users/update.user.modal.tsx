@@ -1,139 +1,143 @@
-import {useEffect, useState } from "react";
-import { Modal, Input, notification, } from "antd";
+import { useEffect } from "react";
+import { Modal, Input, notification, Form, InputNumber, Select, } from "antd";
 import { IUsers } from "./users.table";
 interface IProps {
-    isUpdateModalOpen: boolean,
-    access_token: string,
-    setIsUpdateModalOpen: any,
-    getData: any,
-    dataUpdate: IUsers
+  isUpdateModalOpen: boolean,
+  access_token: string,
+  setIsUpdateModalOpen: any,
+  getData: any,
+  dataUpdate: IUsers
 }
+const { Option } = Select
 const UpdateUserModal = (props: IProps) => {
-    const {access_token, isUpdateModalOpen, setIsUpdateModalOpen, getData, dataUpdate} = props;
+  const { access_token, isUpdateModalOpen, setIsUpdateModalOpen, getData, dataUpdate } = props;
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [address, setAddress] = useState("");
-    const [role, setRole] = useState("");
-    const [gender, setGender] = useState("");
-    const [age, setAge] = useState("");
-
-    const handleCloseUpdateModal = () => {
-        setIsUpdateModalOpen(false);
-        setName("");
-        setEmail("");
-        setPassword("");
-        setAge("");
-        setAddress("");
-        setGender("");
-        setRole("")
+  const [form] = Form.useForm();
+  const handleCloseUpdateModal = () => {
+    setIsUpdateModalOpen(false);
+    form.resetFields()
+  }
+  useEffect(() => {
+    if (dataUpdate) {
+      form.setFieldsValue({
+        name: dataUpdate.name,
+        gender: dataUpdate.gender,
+        age: dataUpdate.age,
+        address: dataUpdate.address,
+        role: dataUpdate.role,
+        email: dataUpdate.email,
+        password: dataUpdate.password
+      })
     }
-    const handleOk = async () => {
-        const payloadUser = {
-          _id: dataUpdate._id,
-          name, email, password, gender, role, address, age
-        }
-        const response = await fetch("http://localhost:8000/api/v1/users", {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access_token}`,
-          },
-          body: JSON.stringify(payloadUser)
-        });
-        const d = await response.json();
-        if (d.data) {
-          notification.success({
-            message: "Cập nhật người dùng thành công",
-          })
-          await getData()
-          setIsUpdateModalOpen(false)
-        } else {
-          notification.error({
-            message: "Có lỗi xảy ra",
-            description: JSON.stringify(d.message)
-          })
-        }
-    };
-    useEffect(() => {
-       if(dataUpdate) {
-            setName(dataUpdate.name);
-            setEmail(dataUpdate.email);
-            setPassword(dataUpdate.password);
-            setAge(dataUpdate.age);
-            setAddress(dataUpdate.address);
-            setGender(dataUpdate.gender);
-            setRole(dataUpdate.role)
-       }
-    },[dataUpdate])
-    return (
-        <Modal title="Update a user" open={isUpdateModalOpen} onOk={handleOk} onCancel={() => { handleCloseUpdateModal() }}>
-        <div>
-          <label>Name</label>
-          <Input
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value)
-            }}
+  }, [dataUpdate])
+  const onFinish = async (values: IUsers) => {
+    const { name, email, gender, age, address, role, password } = values
+    const data = { _id: dataUpdate._id, name, email, gender, age, address, role, password }
+    const response = await fetch("http://localhost:8000/api/v1/users", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+      body: JSON.stringify(data)
+    });
+    const d = await response.json();
+    if (d.data) {
+      notification.success({
+        message: "Cập nhật người dùng thành công",
+      })
+      await getData()
+      setIsUpdateModalOpen(false)
+    } else {
+      notification.error({
+        message: "Có lỗi xảy ra",
+        description: JSON.stringify(d.message)
+      })
+    }
+  };
+  return (
+    <Modal title="Update a user" open={isUpdateModalOpen} onOk={() => { form.submit() }} onCancel={() => { handleCloseUpdateModal() }}>
+      <Form
+        name="basic"
+        onFinish={onFinish}
+        layout="vertical"
+        form={form}
+      >
+        <Form.Item
+          style={{ marginBottom: 3 }}
+          label="Name"
+          name="name"
+          rules={[{ required: true, message: 'Please input your name!' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          style={{ marginBottom: 3 }}
+          name="email"
+          label="Email"
+          rules={[{ type: 'email', required: true, message: 'Please input your email!' }]}>
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          style={{ marginBottom: 3 }}
+          label="Password"
+          name="password"
+          rules={[{ required: dataUpdate ? false : true, message: 'Please input your password!' }]}
+
+        >
+          <Input.Password
+            disabled={dataUpdate ? true : false}
           />
-        </div>
-        <div>
-          <label>Email</label>
-          <Input
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value)
-            }}
-          />
-        </div>
-        <div>
-          <label>Password</label>
-          <Input
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value)
-            }}
-            disabled={true}
-          />
-        </div>
-        <div>
-          <label>Address</label>
-          <Input
-            value={address}
-            onChange={(e) => {
-              setAddress(e.target.value)
-            }}
-          />
-        </div>
-        <div>
-          <label>Age</label>
-          <Input
-            value={age}
-            onChange={(e) => {
-              setAge(e.target.value)
-            }}
-          />
-        </div>
-        <div>
-          <label>Gender</label>
-          <Input
-            value={gender}
-            onChange={(e) => {
-              setGender(e.target.value)
-            }}
-          />
-        </div>
-        <div>
-          <label>Role</label>
-          <Input
-            value={role}
-            onChange={(e) => {
-              setRole(e.target.value)
-            }}
-          />
-        </div>
-      </Modal>
-    )
+        </Form.Item>
+
+        <Form.Item
+          style={{ marginBottom: 3 }}
+          name='age'
+          label="Age"
+          rules={[{ type: 'number', min: 0, max: 99, required: true, message: 'Please input your age!' }]}>
+          <InputNumber style={{ width: '100%' }} />
+        </Form.Item>
+
+        <Form.Item
+          style={{ marginBottom: 3 }}
+          label="Address"
+          name="address"
+          rules={[{ required: true, message: 'Please input your address!' }]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          style={{ marginBottom: 3 }}
+          name="gender"
+          label="Gender"
+          rules={[{ required: true }]}>
+          <Select
+            placeholder="Select a option and change input text above"
+            allowClear
+          >
+            <Option value="MALE">male</Option>
+            <Option value="FERMALE">female</Option>
+            <Option value="OTHER">other</Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          style={{ marginBottom: 3 }}
+          name="role"
+          label="Role"
+          rules={[{ required: true }]}>
+          <Select
+            placeholder="Select a option and change input text above"
+            allowClear
+          >
+            <Option value="USER">User</Option>
+            <Option value="ADMIN">Admin</Option>
+          </Select>
+        </Form.Item>
+      </Form>
+    </Modal>
+  )
 }
 export default UpdateUserModal;
